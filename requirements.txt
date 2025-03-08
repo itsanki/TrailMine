@@ -1,0 +1,16 @@
+streamlit
+pandas
+plotly
+pillow
+requests
+google-cloud-firestore
+streamlit-js-eval
+st-annotated-text
+streamlit-agraph
+moralis
+matplotlib
+numpy
+networkx
+streamlit-lottie
+streamlit-extras
+protobuf
