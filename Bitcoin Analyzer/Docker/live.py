@@ -9,7 +9,7 @@ from neo4j import GraphDatabase
 
 NEO4J_URI = os.environ.get('NEO4J_URI', 'neo4j://neo4j:7687')
 NEO4J_USER = os.environ.get('NEO4J_USER', 'neo4j')
-NEO4J_PASS = os.environ.get('NEO4J_PASS', 'aritra00')
+NEO4J_PASS = os.environ.get('NEO4J_PASS', 'abcd')
 
 SATOSHI_TO_BITCOIN = 100000000
 
