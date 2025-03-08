@@ -1,0 +1,552 @@
+{
+  "title": "Bitcoin Analyzer",
+  "version": "2.4",
+  "settings": {
+    "pagenumber": 0,
+    "editable": false,
+    "fullscreenEnabled": true,
+    "parameters": {
+      "neodash_address_id": "bc1q0q44r7uk37gem6ehqj2ekhahphy9vgu98udhn2",
+      "neodash_transaction_hash": "7c3c17888fb3f6fce7569a9f22c391475e4f47f662b2bfd72c0b0611aa1656fb",
+      "neodash_address_id_display": "bc1q0q44r7uk37gem6ehqj2ekhahphy9vgu98udhn2",
+      "neodash_transaction_hash_display": "7c3c17888fb3f6fce7569a9f22c391475e4f47f662b2bfd72c0b0611aa1656fb",
+      "neodash_address_id_1": "38MfJkxPkpwsZxkyfESwjdaKBdXrV8DpWr",
+      "neodash_address_id_1_display": "38MfJkxPkpwsZxkyfESwjdaKBdXrV8DpWr",
+      "neodash_address_id_2": "bc1qlrfx38ffcyamh9v2ckzgmlq5vqlrr7gr2jflsw",
+      "neodash_address_id_2_display": "bc1qlrfx38ffcyamh9v2ckzgmlq5vqlrr7gr2jflsw"
+    },
+    "queryTimeLimit": 30,
+    "theme": "light",
+    "darkLuma": 20,
+    "resizing": "all"
+  },
+  "pages": [
+    {
+      "title": "Overall statistics",
+      "reports": [
+        {
+          "x": 0,
+          "y": 0,
+          "title": "Total count of transactions",
+          "query": "MATCH (t:Transaction)\nRETURN count(*) AS transactions\n\n\n",
+          "width": 8,
+          "type": "value",
+          "height": 2,
+          "selection": {},
+          "settings": {
+            "refreshButtonEnabled": true,
+            "refreshRate": 5,
+            "textAlign": "center",
+            "verticalAlign": "middle"
+          },
+          "refreshRate": 300,
+          "id": "52fe2e14-0478-4006-93a8-db6a57bce031"
+        },
+        {
+          "x": 8,
+          "y": 0,
+          "title": "Transaction count (24hr)",
+          "query": "MATCH (t:Transaction)\nWHERE datetime() - duration({hours:24}) <= t.timestamp\nRETURN count(*) AS result\n\n\n",
+          "width": 8,
+          "type": "value",
+          "height": 2,
+          "selection": {},
+          "settings": {
+            "nodePositions": {},
+            "refreshButtonEnabled": true,
+            "refreshRate": 5,
+            "monospace": false,
+            "verticalAlign": "middle",
+            "textAlign": "center"
+          },
+          "refreshRate": 300,
+          "id": "4dd5c6e1-2cc9-4efd-a836-a9d5f6d78985"
+        },
+        {
+          "x": 0,
+          "y": 7,
+          "title": "Transactions count for the last 24 hours",
+          "query": "MATCH (t:Transaction)\nWHERE datetime() - duration({hours:24}) <= t.timestamp\nWITH t.timestamp.year AS year, t.timestamp.day AS day, t.timestamp.month AS month, t.timestamp.hour AS hour, count(*) AS y\nRETURN datetime({year:year, month:month, day:day, hour:hour}) AS x, y\n\n\n",
+          "width": 24,
+          "type": "line",
+          "height": 4,
+          "selection": {
+            "x": "x",
+            "value": [
+              "y"
+            ]
+          },
+          "settings": {
+            "xAxisTimeFormat": "%Y-%m-%d %H-%M",
+            "xTickTimeValues": "every 4 hours",
+            "marginLeft": 75,
+            "hideSelections": true,
+            "refreshButtonEnabled": true
+          },
+          "refreshRate": 300,
+          "id": "4ec50134-d485-4e76-9772-6cca56c1c2b4"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "title": "Transaction volume flow in million USD for the last 24 hours",
+          "query": "MATCH (t:Transaction)\nWHERE datetime() - duration({hours:24}) <= t.timestamp\nWITH t.timestamp.year AS year, t.timestamp.day AS day, t.timestamp.month AS month, t.timestamp.hour AS hour, sum(t.flowUSD) AS y\nRETURN datetime({year:year, month:month, day:day, hour:hour}) AS x, y / 1000000\n\n\n\n\n\n",
+          "width": 24,
+          "type": "line",
+          "height": 4,
+          "selection": {
+            "x": "x",
+            "value": [
+              "y / 1000000"
+            ]
+          },
+          "settings": {
+            "xAxisTimeFormat": "%Y-%m-%d %H-%M",
+            "xTickTimeValues": "every 4 hours",
+            "marginLeft": 75,
+            "hideSelections": true,
+            "refreshRate": 10,
+            "showGrid": true,
+            "curve": "linear",
+            "refreshButtonEnabled": true,
+            "legend": false
+          },
+          "refreshRate": 300,
+          "id": "3a8a856b-614a-49cd-9709-a000cf37e4f0"
+        },
+        {
+          "x": 13,
+          "y": 13,
+          "title": "Largest Transactions by Flow within (24hr)",
+          "query": "MATCH (t:Transaction)\nWHERE datetime() - duration({hours:24}) <= t.timestamp\nRETURN t.hash AS transactionHash, t.flowUSD AS valueInUSD, t.flowBTC AS valueInBTC, t.timestamp AS date\nORDER BY valueInBTC DESC LIMIT 100\n\n",
+          "width": 11,
+          "type": "table",
+          "height": 4,
+          "selection": {},
+          "settings": {
+            "nodePositions": {},
+            "refreshButtonEnabled": true,
+            "refreshRate": 60,
+            "compact": true
+          },
+          "refreshRate": 300,
+          "id": "cf59284c-4b8e-472b-ab80-2aba6d20d120"
+        },
+        {
+          "x": 0,
+          "y": 17,
+          "title": "Addresses with Highest Incoming Flow (24hr)",
+          "query": "MATCH (a:Address)\n// incoming flow\nMATCH (a)<-[in:SENT]-(it:Transaction)<-[inback:SENT]-(inbackAddress)\nWHERE datetime() - duration({hours:24}) <= it.timestamp\nWITH a, collect(distinct in) AS incomingTransactions, collect(distinct CASE WHEN inbackAddress = a THEN inback END) AS returnedChange\nWITH a, apoc.coll.sum([t in incomingTransactions | t.valueUSD]) AS incomingTotal, apoc.coll.sum([t in returnedChange | t.valueUSD]) AS returnedTotal\nWITH a, coalesce(incomingTotal,0.0) - coalesce(returnedTotal,0.0) AS incomingFlowUSD\nORDER BY incomingFlowUSD DESC\nLIMIT 100\nRETURN a.id AS address, incomingFlowUSD\n",
+          "width": 13,
+          "type": "table",
+          "height": 4,
+          "selection": {},
+          "settings": {
+            "nodePositions": {},
+            "refreshRate": 60,
+            "compact": true,
+            "wrapContent": false,
+            "allowDownload": false,
+            "refreshButtonEnabled": true
+          },
+          "refreshRate": 300,
+          "id": "2dfb2f83-cc49-4289-961b-a416f071b2c8"
+        },
+        {
+          "id": "d4bfe5f1-0b80-42dc-8e20-734b72c7a5ac",
+          "title": "Transactions > 100$",
+          "query": "MATCH (N:Transaction)\nWHERE N.totalUSD > 100\nRETURN count(*) AS N\n\n\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 0,
+          "y": 15,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "refreshButtonEnabled": true,
+            "refreshRate": 4,
+            "verticalAlign": "middle",
+            "textAlign": "center"
+          },
+          "schema": []
+        },
+        {
+          "x": 16,
+          "y": 0,
+          "title": "Transaction count last 1 hours",
+          "query": "MATCH (t:Transaction)\nWHERE datetime() - duration({hours:1}) <= t.timestamp\nRETURN count(*) AS result\n\n\n",
+          "width": 8,
+          "type": "value",
+          "height": 2,
+          "selection": {},
+          "settings": {
+            "nodePositions": {},
+            "refreshButtonEnabled": true,
+            "refreshRate": 5,
+            "textAlign": "center",
+            "verticalAlign": "middle"
+          },
+          "refreshRate": 300,
+          "id": "46aa42bc-58f0-488b-ba73-8f7cacde9769"
+        },
+        {
+          "id": "ef65b6e8-106f-4b59-ad77-4f66f699a7a4",
+          "title": "Transactions < 100$",
+          "query": "MATCH (N:Transaction)\nWHERE N.totalUSD < 100\nRETURN count(*) AS N\n\n\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 6,
+          "y": 11,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "refreshButtonEnabled": false,
+            "refreshRate": 4,
+            "textAlign": "center",
+            "verticalAlign": "middle"
+          },
+          "schema": []
+        },
+        {
+          "id": "39b59a5f-2f5c-4527-a593-878f9c499bf9",
+          "title": "Transactions > 200$",
+          "query": "MATCH (N:Transaction)\nWHERE N.totalUSD > 200\nRETURN count(*) AS N\n\n\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 12,
+          "y": 11,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "refreshButtonEnabled": true,
+            "refreshRate": 4,
+            "textAlign": "center",
+            "verticalAlign": "middle"
+          },
+          "schema": []
+        },
+        {
+          "id": "28aa9519-0142-4ca7-9136-364b5827c2a5",
+          "title": "Transactions > 200$",
+          "query": "MATCH (N:Transaction)\nWHERE N.totalUSD < 200\nRETURN count(*) AS N\n\n\n\n",
+          "width": 6,
+          "height": 2,
+          "x": 18,
+          "y": 11,
+          "type": "value",
+          "selection": {},
+          "settings": {
+            "refreshButtonEnabled": false,
+            "refreshRate": 4,
+            "verticalAlign": "middle",
+            "textAlign": "center"
+          },
+          "schema": []
+        }
+      ]
+    },
+    {
+      "title": "Inspect specific address",
+      "reports": [
+        {
+          "x": 0,
+          "y": 0,
+          "title": "Select",
+          "query": "MATCH (n:`Address`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 7,
+          "type": "select",
+          "height": 2,
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Address",
+            "propertyType": "id",
+            "parameterName": "neodash_address_id"
+          },
+          "id": "0e166f5f-45b3-4dda-8a40-d5e485469b97"
+        },
+        {
+          "x": 7,
+          "y": 0,
+          "title": "Total outgoing volume in USD",
+          "query": "MATCH (a:Address)\nWHERE a.id = $neodash_address_id\n// outgoing flow\nOPTIONAL MATCH (a)-[out:SENT]->(ot:Transaction)-[outback:SENT]->(outbackAddress)\nWITH a, collect(distinct out) AS outgoingTransactions, collect(distinct CASE WHEN outbackAddress = a THEN outback END) AS returnedChange\nWITH a, apoc.coll.sum([t in outgoingTransactions | t.valueUSD]) AS outgoingTotal, apoc.coll.sum([t in returnedChange | t.valueUSD]) AS returnedTotal\nWITH a, coalesce(outgoingTotal,0.0) - coalesce(returnedTotal,0.0) AS outgoingFlowUSD\nRETURN outgoingFlowUSD",
+          "width": 9,
+          "type": "value",
+          "height": 2,
+          "selection": {},
+          "settings": {
+            "nodePositions": {}
+          },
+          "refreshRate": 60,
+          "id": "050b0c2e-1645-4207-b308-61133dce8f0e"
+        },
+        {
+          "x": 16,
+          "y": 0,
+          "title": "Total incoming volume in USD",
+          "query": "MATCH (a:Address)\nWHERE a.id = $neodash_address_id\n// outgoing flow\nOPTIONAL MATCH (a)<-[in:SENT]-(it:Transaction)<-[inback:SENT]-(inbackAddress)\nWITH a, collect(distinct in) AS outgoingTransactions, collect(distinct CASE WHEN inbackAddress = a THEN inback END) AS returnedChange\nWITH a, apoc.coll.sum([t in outgoingTransactions | t.valueUSD]) AS incomingTotal, apoc.coll.sum([t in returnedChange | t.valueUSD]) AS returnedTotal\nWITH a, coalesce(incomingTotal,0.0) - coalesce(returnedTotal,0.0) AS incomingFlowUSD\nRETURN incomingFlowUSD",
+          "width": 8,
+          "type": "value",
+          "height": 2,
+          "selection": {},
+          "settings": {
+            "nodePositions": {}
+          },
+          "refreshRate": 60,
+          "id": "0ec3f0fb-990f-4269-b58d-5540f4fd1a00"
+        },
+        {
+          "x": 0,
+          "y": 2,
+          "title": "Largest outgoing transactions",
+          "query": "MATCH (a:Address)-[r:SENT]->(t:Transaction)\nWHERE a.id = $neodash_address_id\nRETURN t.hash AS transactionHash, r.valueUSD AS outgoingUSD,r.valueBTC AS outgoingBTC, t.timestamp AS date\nORDER BY outgoingUSD DESC\nLIMIT 100\n\n\n",
+          "width": 12,
+          "type": "table",
+          "height": 4,
+          "selection": {},
+          "settings": {
+            "nodePositions": {}
+          },
+          "id": "d6bdb3cb-ddc9-4bd7-8f8a-993351327e08"
+        },
+        {
+          "x": 12,
+          "y": 2,
+          "title": "Largest incoming transactions",
+          "query": "MATCH (a:Address)<-[r:SENT]-(t:Transaction)\nWHERE a.id = $neodash_address_id\nRETURN t.hash AS transactionHash, r.valueUSD AS incomingUSD,r.valueBTC AS incomingBTC, t.timestamp AS date\nORDER BY incomingUSD DESC\nLIMIT 100\n\n\n\n\n",
+          "width": 12,
+          "type": "table",
+          "height": 4,
+          "selection": {},
+          "settings": {
+            "nodePositions": {}
+          },
+          "id": "bd4dfd64-9501-4c99-a3eb-1ec99b5a560a"
+        }
+      ]
+    },
+    {
+      "title": "Visualize specific transaction",
+      "reports": [
+        {
+          "x": 0,
+          "y": 0,
+          "title": "",
+          "query": "MATCH (n:`Transaction`) \nWHERE toLower(toString(n.`hash`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`hash` as value,  n.`hash` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 8,
+          "type": "select",
+          "height": 1.3333333333333333,
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Transaction",
+            "propertyType": "hash",
+            "parameterName": "neodash_transaction_hash"
+          },
+          "id": "d0c3b052-187c-42f0-ac67-b31303b168df"
+        },
+        {
+          "x": 8,
+          "y": 0,
+          "title": "Graph visualization",
+          "query": "MATCH (t:Transaction)\nWHERE t.hash = $neodash_transaction_hash\nMATCH p=(t)-[:SENT]-()\nRETURN p\n\n\n",
+          "width": 24,
+          "type": "graph",
+          "height": 8,
+          "selection": {
+            "Transaction": "(label)",
+            "Address": "id"
+          },
+          "settings": {
+            "nodePositions": {},
+            "hideSelections": true
+          },
+          "id": "d5f4d171-5402-4ead-afc4-62cfe9f18a15",
+          "schema": [
+            [
+              "Transaction",
+              "flowUSD",
+              "totalUSD",
+              "flowBTC",
+              "totalBTC",
+              "hash",
+              "timestamp"
+            ],
+            [
+              "Address",
+              "id"
+            ]
+          ]
+        },
+        {
+          "x": 0,
+          "y": 8,
+          "title": "Inputs of the transaction",
+          "query": "MATCH (t:Transaction)<-[r:SENT]-(a)\nWHERE t.hash = $neodash_transaction_hash\nRETURN a.id AS address, r.valueUSD AS valueUSD, r.valueBTC AS valueBTC\nORDER BY valueUSD DESC\n\n\n\n\n",
+          "width": 12,
+          "type": "table",
+          "height": 8,
+          "selection": {},
+          "settings": {},
+          "id": "ddc1ac10-5723-4c05-bd56-dbe20df7e87a"
+        },
+        {
+          "x": 12,
+          "y": 8,
+          "title": "Outputs of the transaction",
+          "query": "MATCH (t:Transaction)-[r:SENT]->(a)\nWHERE t.hash = $neodash_transaction_hash\nRETURN a.id AS address, r.valueUSD AS valueUSD, r.valueBTC AS valueBTC\nORDER BY valueUSD DESC\n\n\n\n\n\n\n\n",
+          "width": 12,
+          "type": "table",
+          "height": 8,
+          "selection": {},
+          "settings": {},
+          "id": "98b31be8-dcca-430d-8ab8-dcf9e1e02978"
+        },
+        {
+          "x": 0,
+          "y": 16,
+          "title": "",
+          "query": "MATCH (n:`Transaction`) \nWHERE toLower(toString(n.`hash`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`hash` as value,  n.`hash` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 8,
+          "type": "select",
+          "height": 1.3333333333333333,
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Transaction",
+            "propertyType": "hash",
+            "parameterName": "neodash_transaction_hash"
+          },
+          "id": "657c60e6-78bf-4e36-8dfa-d150c4661a85"
+        },
+        {
+          "x": 8,
+          "y": 16,
+          "title": "",
+          "query": "MATCH (n:`Transaction`) \nWHERE toLower(toString(n.`hash`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`hash` as value,  n.`hash` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 8,
+          "type": "select",
+          "height": 1.3333333333333333,
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Transaction",
+            "propertyType": "hash",
+            "parameterName": "neodash_transaction_hash"
+          },
+          "id": "89ea685e-2f5d-490d-b457-b6238eb7c85f"
+        },
+        {
+          "x": 16,
+          "y": 16,
+          "title": "",
+          "query": "MATCH (n:`Transaction`) \nWHERE toLower(toString(n.`hash`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`hash` as value,  n.`hash` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 8,
+          "type": "select",
+          "height": 1.3333333333333333,
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Transaction",
+            "propertyType": "hash",
+            "parameterName": "neodash_transaction_hash"
+          },
+          "id": "9b880033-9ea2-49f5-b1c3-7bb74b10a5b7"
+        }
+      ]
+    },
+    {
+      "title": "Find Connection between Addresses",
+      "reports": [
+        {
+          "id": "e7af64c4-96ed-4808-9ce5-33a507647f23",
+          "title": "Find Connection between Addresses",
+          "query": "MATCH (n:`Address`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 11,
+          "height": 2,
+          "x": 0,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Address",
+            "propertyType": "id",
+            "propertyTypeDisplay": "id",
+            "parameterName": "neodash_address_id_1",
+            "id": "1"
+          },
+          "schema": []
+        },
+        {
+          "id": "120b1cb3-9f20-4180-b264-44bcbcf22020",
+          "title": "Find Connection between Addresses",
+          "query": "MATCH (n:`Address`) \nWHERE toLower(toString(n.`id`)) CONTAINS toLower($input) \nRETURN DISTINCT n.`id` as value,  n.`id` as display ORDER BY size(toString(value)) ASC LIMIT 5",
+          "width": 13,
+          "height": 2,
+          "x": 11,
+          "y": 0,
+          "type": "select",
+          "selection": {},
+          "settings": {
+            "type": "Node Property",
+            "entityType": "Address",
+            "propertyType": "id",
+            "propertyTypeDisplay": "id",
+            "parameterName": "neodash_address_id_2",
+            "id": "2"
+          },
+          "schema": []
+        },
+        {
+          "id": "99e84a1e-beb5-4854-bd2c-dcf5e30c16a5",
+          "title": "Connections between two above addresses",
+          "query": "MATCH (start:Address {id: $neodash_address_id_1}), (end:Address {id: $neodash_address_id_2})\nMATCH p = allShortestPaths((start)-[*]-(end))\nRETURN p",
+          "width": 24,
+          "height": 5,
+          "x": 0,
+          "y": 2,
+          "type": "graph",
+          "selection": {
+            "Address": "id",
+            "Transaction": "(label)"
+          },
+          "settings": {
+            "fullscreenEnabled": true,
+            "relationshipParticles": true,
+            "hideSelections": false,
+            "showPropertiesOnClick": false,
+            "rightClickToExpandNodes": false
+          },
+          "schema": [
+            [
+              "Address",
+              "id"
+            ],
+            [
+              "Transaction",
+              "flowUSD",
+              "totalUSD",
+              "flowBTC",
+              "totalBTC",
+              "hash",
+              "timestamp"
+            ]
+          ]
+        }
+      ]
+    }
+  ],
+  "parameters": {},
+  "extensions": {
+    "advanced-charts": {
+      "active": true
+    },
+    "styling": {
+      "active": true
+    },
+    "active": true,
+    "activeReducers": []
+  },
+  "uuid": "09cbd415-6571-4032-b4e1-f9fd888e3fcd"
+}
